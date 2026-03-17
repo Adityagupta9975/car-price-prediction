@@ -159,8 +159,8 @@ jupyter notebook main.ipynb
 ## 🙋‍♂️ Author
 
 **Your Name**
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [your-linkedin](www.linkedin.com/in/aditya-gupta-7b186a269)
+- GitHub:(https://github.com/Adityagupta9975)
+- LinkedIn:(www.linkedin.com/in/aditya-gupta-7b186a269)
 
 ---
 
