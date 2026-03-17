@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Price Predictor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-D8n6E+7ofFzvbVxL6nQ/0ZG99xZPzw45RfdpHq4T1C3vh2GBKF7jP3aR2AAXbrH6MqkSm7l6O8UM0bPf8h9XRw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.4/css/all.min.css" integrity="sha512-lxQkDUu8mZaiyidnFV3h+ly79LJafc7DDxGDk9SKNiFhe41+qTH2a7+XXgNO6f+NE84F7qpOIUP4p5xtHa2BAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      background: linear-gradient(125deg, #2d8cff 0%, #71d8f8 50%, #64c5a9 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    .glass-card {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+    .h1 span { color: #0f4c81; }
+    .btn-primary {
+      box-shadow: 0 8px 24px rgba(15, 76, 129, 0.35);
+      border: 0;
+    }
+    .form-control, .form-select {
+      border-radius: 0.7rem;
+    }
+    .alert-custom {
+      background: rgba(85, 158, 237, 0.14);
+      border: 1px solid rgba(85, 158, 237, 0.35);
+      color: #08427c;
+    }
+    .footer-note {
+      color: #f2f5ff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8">
+        <div class="card glass-card shadow-lg">
+          <div class="card-header border-0 text-center py-4">
+            <h1 class="display-6 fw-bold mb-0"><span>Car</span> Price Predictor</h1>
+            <p class="text-muted mt-2">Interactive, responsive and stylish UI for machine learning inference</p>
+          </div>
+          <div class="card-body p-4">
+            <form id="predictForm" class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Car Name</label>
+                <input type="text" name="car_name" class="form-control" placeholder="e.g. Hyundai i20">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Vehicle Age (years)</label>
+                <input type="number" name="vehicle_age" min="0" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">KM Driven</label>
+                <input type="number" name="km_driven" min="0" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Mileage (kmpl)</label>
+                <input type="number" name="mileage" min="0" step="0.1" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Engine (cc)</label>
+                <input type="number" name="engine" min="0" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Max Power (bhp)</label>
+                <input type="number" name="max_power" min="0" step="0.1" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Seats</label>
+                <input type="number" name="seats" min="1" max="7" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Seller Type</label>
+                <select name="seller_type" class="form-select" required>
+                  <option>Dealer</option>
+                  <option>Individual</option>
+                  <option>Trustmark Dealer</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fuel Type</label>
+                <select name="fuel_type" class="form-select" required>
+                  <option>CNG</option>
+                  <option>Diesel</option>
+                  <option>Electric</option>
+                  <option>LPG</option>
+                  <option selected>Petrol</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Transmission</label>
+                <select name="transmission" class="form-select" required>
+                  <option selected>Manual</option>
+                  <option>Automatic</option>
+                </select>
+              </div>
+              <div class="col-12 text-end">
+                <button id="predictBtn" class="btn btn-primary btn-lg" type="submit">
+                  <i class="fa fa-tachometer-alt me-2"></i> Predict Price
+                </button>
+              </div>
+            </form>
+
+            <div id="prediction-panel" class="mt-4" style="display: none;">
+              <div id="prediction-result" class="alert alert-custom"></div>
+            </div>
+
+            <div id="history-panel" class="mt-3" style="display: none;">
+              <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="card-title">Recent Predictions</h6>
+                  <ul class="list-group" id="history-list"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-center footer-note mt-3">Powered by Flask, scikit-learn, and your custom model. Try different values and compare instantly.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('predictForm');
+    const resultPanel = document.getElementById('prediction-panel');
+    const resultText = document.getElementById('prediction-result');
+    const historyPanel = document.getElementById('history-panel');
+    const historyList = document.getElementById('history-list');
+    const button = document.getElementById('predictBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const jsonData = {};
+      formData.forEach((value, key) => jsonData[key] = value);
+
+      resultText.className = 'alert alert-custom';
+      resultText.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Predicting...';
+      resultPanel.style.display = 'block';
+      button.disabled = true;
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(jsonData)
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+          resultText.className = 'alert alert-danger';
+          resultText.innerHTML = `<strong>Error:</strong> ${payload.error || 'Prediction failed'} `;
+          historyPanel.style.display = 'none';
+          return;
+        }
+
+        resultText.className = 'alert alert-success';
+        resultText.innerHTML = `<i class="fa fa-rupee-sign me-2"></i><strong>Predicted Price:</strong> ${payload.result}`;
+
+        historyList.innerHTML = '';
+        payload.history.forEach(item => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-start';
+          li.innerHTML = `<div><strong>${item.name}</strong> <span class="text-muted">(${item.details})</span></div><span class="badge bg-primary rounded-pill">${item.price}</span>`;
+          historyList.appendChild(li);
+        });
+
+        historyPanel.style.display = payload.history.length ? 'block' : 'none';
+      } catch (err) {
+        resultText.className = 'alert alert-danger';
+        resultText.innerHTML = `<strong>Error:</strong> ${err.message}`;
+        historyPanel.style.display = 'none';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
